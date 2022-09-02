@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, Alert, FlatList } from "react-native";
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons } from "@expo/vector-icons";
 import Title from "../components/ui/Title";
 import { useState, useEffect } from "react";
 import NumberContainer from "../components/game/NumberContainer";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import Card from "../components/ui/Card";
 import InstructionText from "../components/ui/InstructionText";
+import GuessLogItem from "../components/game/GuessLogItem";
 
 const generateRandomBetween = (min, max, exclude) => {
     const rndNum = Math.floor(Math.random() * (max - min)) + min;
@@ -27,14 +28,14 @@ const GameScreen = ({ userNumber, onGameOver }) => {
 
     useEffect(() => {
         if (currentGuess === userNumber) {
-            onGameOver();
+            onGameOver(guessRounds.length);
         }
     }, [currentGuess, userNumber, onGameOver]);
 
     useEffect(() => {
         minBoundary = 1;
         maxBoundary = 100;
-    }, [])
+    }, []);
 
     const nextGuessHandler = (direction) => {
         if (
@@ -59,8 +60,10 @@ const GameScreen = ({ userNumber, onGameOver }) => {
             currentGuess
         );
         setCurrentGuess(newRndNumber);
-        setGuessRounds(prevGuessRounds => [newRndNumber, ...prevGuessRounds])
+        setGuessRounds((prevGuessRounds) => [newRndNumber, ...prevGuessRounds]);
     };
+
+    const guessRoundsListLength = guessRounds.length;
 
     return (
         <>
@@ -68,26 +71,47 @@ const GameScreen = ({ userNumber, onGameOver }) => {
                 <Title>Opponent's Guess</Title>
                 <NumberContainer>{currentGuess}</NumberContainer>
                 <Card>
-                    <InstructionText style={styles.instructionText}>Higher or Lower?</InstructionText>
+                    <InstructionText style={styles.instructionText}>
+                        Higher or Lower?
+                    </InstructionText>
                     <View style={styles.buttonsContainer}>
                         <View style={styles.buttonContainer}>
                             <PrimaryButton
                                 onPress={nextGuessHandler.bind(this, "lower")}
                             >
-                                <Ionicons name="md-remove" size={24} color="white" />
+                                <Ionicons
+                                    name="md-remove"
+                                    size={24}
+                                    color="white"
+                                />
                             </PrimaryButton>
                         </View>
                         <View style={styles.buttonContainer}>
                             <PrimaryButton
                                 onPress={nextGuessHandler.bind(this, "greater")}
                             >
-                                <Ionicons name="md-add" size={24} color="white" />
+                                <Ionicons
+                                    name="md-add"
+                                    size={24}
+                                    color="white"
+                                />
                             </PrimaryButton>
                         </View>
                     </View>
                 </Card>
-                <View>
-                    <FlatList data={guessRounds} renderItem={(itemData) => <Text>{itemData.item}</Text>} keyExtractor={(item) => item} />
+                <View style={styles.listContainer}>
+                    <FlatList
+                        data={guessRounds}
+                        renderItem={(itemData) => (
+                            <GuessLogItem
+                                roundNumber={
+                                    guessRoundsListLength - itemData.index
+                                }
+                                guess={itemData.item}
+                            />
+                        )}
+                        keyExtractor={(item) => item}
+                    />
                 </View>
             </View>
         </>
@@ -103,7 +127,7 @@ const styles = StyleSheet.create({
         paddingTop: 36,
     },
     instructionText: {
-        marginBottom: 12
+        marginBottom: 12,
     },
     buttonsContainer: {
         flexDirection: "row",
@@ -111,4 +135,8 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flex: 1,
     },
+    listContainer: {
+        flex: 1,
+        padding: 16,
+    }
 });
